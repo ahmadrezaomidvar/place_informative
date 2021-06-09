@@ -60,10 +60,15 @@ class DownloadProfile:
 if __name__ == '__main__':
     tehran= ['tehran.zoom', 'explore_tehran', 'tehranazdoor', 'tehran', 'eye_on_tehran']
     dubai= ['explore.dubai_', 'dubai', 'visit.dubai']
+    istanbul= ['istanbull.hayali'] #['istanbul', 'istanbull.hayali']
+    doha = ['visitqatar'] #['visitqatar', 'doha']
+    muscat = ['experienceoman'] #['experienceoman', 'oman_tourism_love']
+    baku= ['visitazerbaijan'] #['visitazerbaijan', 'experienceazerbaijan']
+    dushanbe= ['dushanbe']
 
-    for profile_name in dubai:
-        download_dir= '/data/reza/datasets/place/dubai'
-        profile = DownloadProfile(profile_name, username='city_serach', password='Urban_Article', download_dir=download_dir,
+    for profile_name in dushanbe:
+        download_dir= '/data/reza/datasets/place/dushanbe'
+        profile = DownloadProfile(profile_name, username='cityandimages', password='urban_article2021', download_dir=download_dir,
                                 download_comments=False, download_videos=False, save_metadata=False, download_geotags=False, 
                                 post_metadata_txt_pattern='')
         profile.download()
