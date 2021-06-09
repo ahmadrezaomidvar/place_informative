@@ -1,0 +1,33 @@
+# model configuration can be configured here
+
+data:
+  test_split: 0.4                       # test split percentage
+  val_split: 0.1                        # validation split percentage
+  root: /data/reza/datasets/place       # path to pic folder
+
+model:
+  model_name: resnet152        # Model name. In case of changing of it, code in src/model/factory.py shall be modified
+  img_size: 224               # Image size.
+
+train:
+  optimizer: SGD              # Optimizer type. Now just 'SGD' or 'Adam' is supported
+  lr: 0.0005                  # Learning rate value
+  momentum: 0.9               # Momentum value for optimizer
+  epochs: 2                 # No of epochs
+  batch_size: 256             
+  all_layers: False            # Option to train all parameters: 'True' or freezing all except final layers: 'False'
+  num_workers: 0              
+  seed: 1221          
+  lr_step: 30                 # step to decay learning rate for lr_scheduler
+  lr_gamma: 1                 # weight to decay learning rate in lr_scheduler
+  weight_file: /data/reza/checkpoint/place_informative/resnet152_epoch-2_acc-0.527_20210609.pth       # trained model to use for inference
+
+tensorboard: False             # Option to enable logging using tensorboard: 'True' or disabling it: 'False'
+
+hydra:
+  run:
+    dir: .                    #default will be 'outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}' (https://github.com/facebookresearch/hydra/blob/1.0_branch/hydra/conf/hydra/output/default.yaml)
+
+summary:
+  summary_to_file: True      # Option to write model summary in txt file. 'False' or 'True'
+

@@ -1,6 +1,5 @@
-data:
-	python ./model3_age_estimation/src/data/create_db.py
-
 train:
-	python ./model3_age_estimation/src/train/train.py
-
+	python ./place_informative/src/train/train.py
+	
+cls_predict:
+	python ./place_informative/src/prediction/predict.py
