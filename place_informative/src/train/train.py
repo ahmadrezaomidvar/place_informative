@@ -5,6 +5,8 @@ import numpy as np
 import random
 from tqdm import tqdm
 import datetime
+from sacred import Experiment
+from sacred.observers import MongoObserver
 
 import torch
 import torch.nn as nn
@@ -24,28 +26,32 @@ config_name = str(Path(to_absolute_path(__file__)).resolve().parents[1].joinpath
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 print (f'\ntraining on {device} . . .')
 
-@hydra.main(config_name=config_name)
-def main(cfg):
+ex = Experiment('urban_train')
+ex.add_config(config_name)
+ex.observers.append(MongoObserver(db_name='urban'))
+
+@ex.capture
+def train(_config, _run):
     # Random seed
-    if cfg.train.seed:
-        seed=cfg.train.seed
+    if _config['seed']:
+        seed=_config['seed']
         random.seed(seed) 
         np.random.seed(seed)
         torch.manual_seed(seed)
         torch.cuda.manual_seed_all(seed)                                         
     ## Data loading code
-    T = transforms(cfg)
-    train_loader = DatasetLoader(cfg, 'train', transforms=T.get_transform('train')).Loader() 
-    val_loader = DatasetLoader(cfg, 'valid', transforms=T.get_transform('valid')).Loader()
-    test_loader = DatasetLoader(cfg, 'test', transforms=T.get_transform('test')).Loader()
+    T = transforms(_config)
+    train_loader = DatasetLoader(_config, 'train', transforms=T.get_transform('train')).Loader() 
+    val_loader = DatasetLoader(_config, 'valid', transforms=T.get_transform('valid')).Loader()
+    test_loader = DatasetLoader(_config, 'test', transforms=T.get_transform('test')).Loader()
 
     
     # create model
-    model = ModelBuild(cfg)
+    model = ModelBuild(_config)
 
     # SummaryWriter
-    if cfg.tensorboard == True:
-        log_dir = Path(to_absolute_path(__file__)).resolve().parents[2].joinpath('reports', 'tb_log', cfg.model.model_name, 
+    if _config['log_records'] == True:
+        log_dir = Path(to_absolute_path(__file__)).resolve().parents[2].joinpath('reports', 'tb_log', _config['model_name'], 
                                                                                  datetime.datetime.now().strftime('%Y%m%d-%H%M%S'))
         writer = SummaryWriter(log_dir=log_dir)
         # writer.add_graph(model, torch.rand((cfg.train.batch_size, 3, cfg.model.img_size, cfg.model.img_size)))  # uncomment these lines in
@@ -61,11 +67,11 @@ def main(cfg):
     criterion.to(device)
 
     # optimizer definition:
-    if cfg.train.optimizer == 'SGD' or cfg.train.optimizer == 'sgd':
-        optimizer = optim.SGD(model.parameters(), lr=cfg.train.lr, momentum=cfg.train.momentum)
+    if _config['optimizer'] == 'SGD' or _config['optimizer'] == 'sgd':
+        optimizer = optim.SGD(model.parameters(), lr=_config['lr'], momentum=_config['momentum'])
     
-    elif cfg.train.optimizer == 'Adam' or cfg.train.optimizer == 'ADAM' or cfg.train.optimizer == 'adam':
-        optimizer = optim.Adam(model.parameters(), lr=cfg.train.lr)
+    elif _config['optimizer'] == 'Adam' or _config['optimizer'] == 'ADAM' or _config['optimizer'] == 'adam':
+        optimizer = optim.Adam(model.parameters(), lr=_config['lr'])
     
     else:
         raise ValueError("optimizer is not selected properly. For now, just 'SGD' and 'Adam' are available")
@@ -75,10 +81,10 @@ def main(cfg):
     best_acc = 0.
     to_save=Path('/data/reza/checkpoint/place_informative')
     to_save.mkdir(parents=True,exist_ok=True)
-    lr_scheduler = StepLR(optimizer, step_size=cfg.train.lr_step, gamma=cfg.train.lr_gamma)
+    lr_scheduler = StepLR(optimizer, step_size=_config['lr_step'], gamma=_config['lr_gamma'])
 
-    for epoch in range(start_epoch, cfg.train.epochs+start_epoch):
-        print(f'\nEpoch: [{epoch} | {cfg.train.epochs}] ')
+    for epoch in range(start_epoch, _config['epochs']+start_epoch):
+        print(f'\nEpoch: [{epoch} | {_config["epochs"]}] ')
 
         # train the model
         train_loss, train_acc = train_one_epoch(train_loader, model, criterion, optimizer, epoch, 
@@ -88,8 +94,8 @@ def main(cfg):
                                                                 device=device, phase='val')
 
         # writing the scalars
-            # LOSS
-        if cfg.tensorboard == True:
+            # tensorboard
+        if _config['log_records'] == True:
             writer.add_scalars('loss', {'train': train_loss,
                                             'validation': val_loss}, epoch)
             writer.flush()
@@ -97,6 +103,12 @@ def main(cfg):
             writer.add_scalars('accuracy', {'train': train_acc,
                                             'validation': val_acc}, epoch)
             writer.flush()
+
+            # sacred
+            _run.log_scalar('train_loss', train_loss, epoch)
+            _run.log_scalar('val_loss', val_loss, epoch)
+            _run.log_scalar('train_acc', train_acc.item(), epoch)
+            _run.log_scalar('val_acc', val_acc.item(), epoch)
 
         if val_acc > best_acc:
             print('Acuuracy improved. Saving the best model...')
@@ -108,20 +120,20 @@ def main(cfg):
                     'optimizer': optimizer.state_dict(),
                     'lr_scheduler': lr_scheduler.state_dict(),
                 },
-                    to_save / f'{cfg.model.model_name}_epoch-{epoch}_acc-{val_acc:.3f}_{datetime.datetime.now().strftime("%Y%m%d")}.pth'
+                    to_save / f'{_config["model_name"]}_epoch-{epoch}_acc-{val_acc:.3f}_{datetime.datetime.now().strftime("%Y%m%d")}.pth'
                     )
         else: 
             print('Accuracy does not improved')
         print(f'Best Acc: {best_acc:.4f}')
 
-    if cfg.tensorboard == True:
+    if _config['log_records'] == True:
         writer.close()
 
 
 
-if __name__ == '__main__':
-    main()
-
+@ex.automain
+def main(_config, _run):
+    train(_config, _run)
 
 ##TO DO
 # 

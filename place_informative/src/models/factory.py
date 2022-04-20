@@ -37,11 +37,10 @@ class ModelBuild(nn.Module):
     """
     def __init__(self, cfg):
         super(ModelBuild, self).__init__()
-        self.cfg = cfg
-        self.model_name = cfg.model.model_name
+        self.model_name = cfg['model_name']
 
         # Defining the number of classes.
-        self.num_classes = 7
+        self.num_classes = cfg['num_classes']
 
         # Models available in pytorch
         self.model_names = sorted(name for name in models.__dict__
@@ -61,7 +60,7 @@ class ModelBuild(nn.Module):
         self.model = models.__dict__[f'{self.model_name}'](pretrained=True)
 
         # freezing the layers
-        if self.cfg.train.all_layers == False:
+        if cfg['all_layers'] == False:
             for param in self.model.parameters():
                 param.requires_grad = False
 
