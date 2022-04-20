@@ -1,0 +1,36 @@
+# configuration can be set here
+
+#### common options
+download_dir: '/data/reza/insta/tehran' # '/Users/rezachi/Downloads/tehran'
+login_users_path: #'/Users/rezachi/Dropbox/batman/github/instagram/users/login_users.json'
+profiles_path: '/home/reza/Dropbox/batman/github/instagram/profiles/profiles.txt' # '/Users/rezachi/Dropbox/batman/github/instagram/profiles/profiles.txt'
+proxies_path: '/home/reza/Dropbox/batman/github/instagram/proxy/proxies2.txt' # '/Users/rezachi/Dropbox/batman/github/instagram/proxy/proxies.txt'
+
+night_sleep : 0             # night time to sleep (midnight)
+night_sleep_time: 60        # duration of night sleep before each time check, minutes
+morning_wake : 7            # Morning time to wake up
+
+max_download: 150            # max download to check for sleep
+min_time: 20                # min elapsed time for maximum download, minutes
+down_sleep_min: 13          # min sleep time if reaches maximum download in minimum time, minutes
+down_sleep_max: 20          # max sleep time if reaches maximum download in minimum time, minutes
+
+random_sleep_time_start: 4  # min random sleep time, seconds
+random_sleep_time_end: 7    # max random sleep time, seconds
+
+
+#### instagram-scraper options
+num_posts : 10             # Number of maximum post to download for each profile
+post_sleep_time_start: 2    # min sleep time after each post download, seconds
+post_sleep_time_end: 5      # max sleep time after each post download, seconds
+media_types: 'image'
+
+#### instaloader options
+download_videos: False
+download_comments: False
+download_geotags: False
+save_metadata: False
+post_metadata_txt_pattern: ''
+max_connection_attempts: 5    # Maximum number of connection attempts until a request is aborted. Defaults to 3. If a connection fails, it can be manually skipped by hitting Control-c. Set this to 0 to retry infinitely.
+request_timeout: 300          # Seconds to wait before timing out a connection request. Defaults to 300
+random_probability: 0.33      # float to set the probability of random sleep. 0<random_probability=<1

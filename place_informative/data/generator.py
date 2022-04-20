@@ -41,11 +41,8 @@ class CityData(Dataset):
         
         # Config parameters
         self.mode = mode
-        self.img_size = cfg.model.img_size
+        self.img_size = cfg['img_size']
         self.transforms = transforms
-
-        # Num of classes for CityData dataset.
-        self.num_classes = 7
 
         # data set
         data = data_split(cfg, self.mode)
@@ -67,7 +64,7 @@ class CityData(Dataset):
         label = np.array([key for key in self.class_map.keys() if self.class_map[key]==label], dtype=np.int64)
         label = torch.from_numpy(label).squeeze()
         
-        img = Image.open(self.data_set[index])
+        img = Image.open(self.data_set[index]).convert("RGB")
 
         # data transform which will be as per transform class in utils.py
         if self.transforms is not None:
@@ -100,9 +97,9 @@ class DatasetLoader():
     def __init__(self, cfg, mode, transforms):
 
         # Confiig parameters
-        self.batch_size = cfg.train.batch_size
+        self.batch_size = cfg['batch_size']
+        self.num_workers = cfg['num_workers']
         self.cfg = cfg
-        self.num_workers = cfg.train.num_workers
 
         self.mode = mode
         self.transforms = transforms
@@ -122,14 +119,16 @@ class DatasetLoader():
 # 
 
 
-
+# from sacred import Experiment
 # config_name = str(Path(to_absolute_path(__file__)).resolve().parents[1].joinpath('src', 'models', 'config', 'config.yaml'))
-# @hydra.main(config_name=config_name)
-# def main(cfg):
+# ex = Experiment('data')
+# ex.add_config(config_name)
+# @ex.automain
+# def main(_config):
 #     # data_set = CityData(cfg, 'test', transforms=transforms(cfg).get_transform('test'))
 #     # img, label = data_set[0]
 #     # print(label, img.size())
-#     DataLoader = DatasetLoader(cfg, 'train', transforms=transforms(cfg).get_transform('train')).Loader()
+#     DataLoader = DatasetLoader(_config, 'train', transforms=transforms(_config).get_transform('train')).Loader()
 #     print(len(DataLoader))
 #     for x, y in DataLoader:
 #         print(x.size(), y.size())

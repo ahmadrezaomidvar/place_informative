@@ -39,7 +39,7 @@ class transforms:
 
     """
     def __init__(self, cfg):
-        self.img_size = cfg.model.img_size
+        self.img_size = cfg['img_size']
 
     def get_transform(self, mode):
         transform = []
@@ -64,9 +64,9 @@ class transforms:
 class data_split:
     def __init__(self, cfg, mode):
         self.mode = mode
-        self.test_split = cfg.data.test_split
-        self.val_split = cfg.data.val_split
-        self.root = cfg.data.root
+        self.test_split = cfg['test_split']
+        self.val_split = cfg['val_split']
+        self.root = cfg['root']
         self.class_map_path = f'{self.root}/class_map.json'
         
     def split(self):
