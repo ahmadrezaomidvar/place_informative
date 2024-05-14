@@ -4,7 +4,7 @@ opencv_python==4.5.1.48
 scipy==1.6.2
 dlib==19.21.1
 hydra==2.5
-scikit_learn==0.24.2
+scikit_learn>=1.0.1
 tqdm==4.50.0
 torch==1.6.0
 pillow==8.2.0
